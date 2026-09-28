@@ -18,15 +18,15 @@ fail() { echo "FAIL: $*"; exit 1; }
 
 utils="$(run_sync Curiosus.Utils)"
 [[ -f "$utils/build/curiosus.cake" ]] || fail "Curiosus.Utils did not get sync/"
-[[ -e "$utils/.keep" ]] || fail "Curiosus.Utils did not get sync-docs/"
+[[ -e "$utils/website/docusaurus.config.mjs" ]] || fail "Curiosus.Utils did not get sync-docs/"
 
 bot="$(run_sync Curiosus.TelegramBot)"
 [[ -f "$bot/build/curiosus.cake" ]] || fail "Curiosus.TelegramBot did not get sync/"
-[[ ! -e "$bot/.keep" ]] || fail "Curiosus.TelegramBot got sync-docs/"
+[[ ! -e "$bot/website" ]] || fail "Curiosus.TelegramBot got sync-docs/"
 
 override="$work/override"
 git init --quiet "$override"
 (cd "$override" && SYNC_REPOSITORY=Curiosus.Migrations SYNC_DRY_RUN=1 "$root/scripts/sync.sh" >/dev/null)
-[[ -e "$override/.keep" ]] || fail "SYNC_REPOSITORY is ignored"
+[[ -e "$override/website/docusaurus.config.mjs" ]] || fail "SYNC_REPOSITORY is ignored"
 
 echo "sync tests passed"
