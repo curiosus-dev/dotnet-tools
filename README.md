@@ -16,8 +16,8 @@ so local builds, AI agents and CI use exactly the same scripts and settings.
 
 | Repository | Default branch | Pull requests | Coverage | NuGet |
 |---|---|---|---|---|
-| [Curiosus.Migrations](https://github.com/curiosus-dev/Curiosus.Migrations) | [![Release](https://github.com/curiosus-dev/Curiosus.Migrations/actions/workflows/release-packages.yml/badge.svg?branch=master)](https://github.com/curiosus-dev/Curiosus.Migrations/actions/workflows/release-packages.yml) | [![Build](https://github.com/curiosus-dev/Curiosus.Migrations/actions/workflows/build.yml/badge.svg?event=pull_request)](https://github.com/curiosus-dev/Curiosus.Migrations/actions/workflows/build.yml) | [![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/curiosus-dev/Curiosus.Migrations/badges/coverage.json)](https://github.com/curiosus-dev/Curiosus.Migrations/actions/workflows/release-packages.yml) | [![NuGet](https://img.shields.io/nuget/v/Curiosus.Migrations)](https://www.nuget.org/packages/Curiosus.Migrations) |
-| [Curiosus.Utils](https://github.com/curiosus-dev/Curiosus.Utils) | [![Release](https://github.com/curiosus-dev/Curiosus.Utils/actions/workflows/release-packages.yml/badge.svg?branch=master)](https://github.com/curiosus-dev/Curiosus.Utils/actions/workflows/release-packages.yml) | [![Build](https://github.com/curiosus-dev/Curiosus.Utils/actions/workflows/build.yml/badge.svg?event=pull_request)](https://github.com/curiosus-dev/Curiosus.Utils/actions/workflows/build.yml) | [![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/curiosus-dev/Curiosus.Utils/badges/coverage.json)](https://github.com/curiosus-dev/Curiosus.Utils/actions/workflows/release-packages.yml) | [![NuGet](https://img.shields.io/nuget/v/Curiosus.Tools?label=nuget%20Curiosus.Tools)](https://www.nuget.org/profiles/curiosus-dev) |
+| [Curiosus.Migrations](https://github.com/curiosus-dev/Curiosus.Migrations) | [![Release](https://github.com/curiosus-dev/Curiosus.Migrations/actions/workflows/release-packages.yml/badge.svg?branch=main)](https://github.com/curiosus-dev/Curiosus.Migrations/actions/workflows/release-packages.yml) | [![Build](https://github.com/curiosus-dev/Curiosus.Migrations/actions/workflows/build.yml/badge.svg?event=pull_request)](https://github.com/curiosus-dev/Curiosus.Migrations/actions/workflows/build.yml) | [![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/curiosus-dev/Curiosus.Migrations/badges/coverage.json)](https://github.com/curiosus-dev/Curiosus.Migrations/actions/workflows/release-packages.yml) | [![NuGet](https://img.shields.io/nuget/v/Curiosus.Migrations)](https://www.nuget.org/packages/Curiosus.Migrations) |
+| [Curiosus.Utils](https://github.com/curiosus-dev/Curiosus.Utils) | [![Release](https://github.com/curiosus-dev/Curiosus.Utils/actions/workflows/release-packages.yml/badge.svg?branch=main)](https://github.com/curiosus-dev/Curiosus.Utils/actions/workflows/release-packages.yml) | [![Build](https://github.com/curiosus-dev/Curiosus.Utils/actions/workflows/build.yml/badge.svg?event=pull_request)](https://github.com/curiosus-dev/Curiosus.Utils/actions/workflows/build.yml) | [![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/curiosus-dev/Curiosus.Utils/badges/coverage.json)](https://github.com/curiosus-dev/Curiosus.Utils/actions/workflows/release-packages.yml) | [![NuGet](https://img.shields.io/nuget/v/Curiosus.Tools?label=nuget%20Curiosus.Tools)](https://www.nuget.org/profiles/curiosus-dev) |
 | [Curiosus.TelegramBot](https://github.com/curiosus-dev/Curiosus.TelegramBot) | [![Release](https://github.com/curiosus-dev/Curiosus.TelegramBot/actions/workflows/release-packages.yml/badge.svg?branch=main)](https://github.com/curiosus-dev/Curiosus.TelegramBot/actions/workflows/release-packages.yml) | [![Build](https://github.com/curiosus-dev/Curiosus.TelegramBot/actions/workflows/build.yml/badge.svg?event=pull_request)](https://github.com/curiosus-dev/Curiosus.TelegramBot/actions/workflows/build.yml) | [![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/curiosus-dev/Curiosus.TelegramBot/badges/coverage.json)](https://github.com/curiosus-dev/Curiosus.TelegramBot/actions/workflows/release-packages.yml) | [![NuGet](https://img.shields.io/nuget/v/Curiosus.TelegramBot)](https://www.nuget.org/packages/Curiosus.TelegramBot) |
 
 *Default branch* is the last push: build, tests, publishing. *Pull requests* is the last pull request build.
@@ -93,6 +93,7 @@ listed in [`settings/repositories.json`](settings/repositories.json):
 | `rulesets/protect-default-branch.json` | No force pushes or deletion of the default branch, no bypass |
 | `rulesets/default-branch-pull-requests.json` | Changes via pull requests with green required checks; repository admins can bypass |
 | `rulesets/protect-release-tags.json` | Tags can be created but never moved or deleted |
+| `environments.json` | `nuget` environment for publishing, deploys from `main` only; used by the repositories listing it in `repositories.json` |
 
 Dependabot alerts, Dependabot security updates, private vulnerability reporting and CodeQL default setup are enabled
 by the same script. Community health files (`SECURITY.md`, `CONTRIBUTING.md`, issue and pull request templates)
@@ -138,11 +139,15 @@ Run it when Dependabot bumps an action here, then merge: the sync pull requests 
 ### NuGet Trusted Publishing, per repository
 
 1. On nuget.org: profile → Trusted Publishing → add a policy owned by the packages owner:
-   repository owner `curiosus-dev`, repository `<name>`, workflow file `release-packages.yml`, no environment.
+   repository owner `curiosus-dev`, repository `<name>`, workflow file `release-packages.yml`, environment `nuget`.
+   The environment matters: a workflow file can be changed in any branch, the `nuget` environment deploys from `main`
+   only, so tokens from other branches don't match the policy.
 2. In the repository add the secret `NUGET_USER` — nuget.org profile name, not an email.
 3. After the first successful release remove old API key secrets and revoke the keys on nuget.org.
 
 ## Adding a repository
 
 Add it to the matrix in [`.github/workflows/sync.yml`](.github/workflows/sync.yml), install the sync app on it,
-run the workflow manually and set up NuGet Trusted Publishing as above.
+add it to `settings/repositories.json` (with `"environments": [ "nuget" ]` for a library), run
+`scripts/repo-settings.py apply <name>`, run the sync workflow manually and set up NuGet Trusted Publishing as above.
+The default branch must be `main`.

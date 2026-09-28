@@ -113,6 +113,32 @@ def process(owner, name, config, apply):
             lambda: gh('PUT', f'{repo}/actions/permissions/fork-pr-contributor-approval',
                        actions['fork_pr_contributor_approval']))
 
+    environments = load('environments.json')
+    for env_name in config.get('environments', []):
+        env = environments[env_name]
+        env_path = f'{repo}/environments/{env_name}'
+        policy = {'deployment_branch_policy': env['deployment_branch_policy']}
+        actual_env = gh('GET', env_path, allow_missing=True)
+        if actual_env is None:
+            diffs.append(f'environment {env_name}: missing')
+            if apply:
+                gh('PUT', env_path, policy)
+        else:
+            section(f'environment {env_name}', policy, actual_env, lambda p=env_path, b=policy: gh('PUT', p, b))
+        # A new environment has no branch policies yet, so they are compared after it is created.
+        actual = (gh('GET', f'{env_path}/deployment-branch-policies', allow_missing=True) or {}).get('branch_policies', [])
+        expected_policies = {(x['name'], x['type']) for x in env['branch_policies']}
+        actual_policies = {(x['name'], x.get('type', 'branch')): x['id'] for x in actual}
+        for name, kind in sorted(expected_policies - actual_policies.keys()):
+            diffs.append(f'environment {env_name}: branch policy {kind} {name} missing')
+            if apply:
+                gh('POST', f'{env_path}/deployment-branch-policies', {'name': name, 'type': kind})
+        for (name, kind), policy_id in sorted(actual_policies.items()):
+            if (name, kind) not in expected_policies:
+                diffs.append(f'environment {env_name}: unexpected branch policy {kind} {name}')
+                if apply:
+                    gh('DELETE', f'{env_path}/deployment-branch-policies/{policy_id}')
+
     existing = {r['name']: r['id'] for r in gh('GET', f'{repo}/rulesets?includes_parents=false') or []}
     for ruleset in rulesets_for(config):
         ruleset_id = existing.get(ruleset['name'])
