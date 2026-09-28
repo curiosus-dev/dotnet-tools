@@ -21,6 +21,9 @@ grep -q 'Fixture of a documented repository' build/index.html || fail "home page
 [[ -f "$page" ]] || fail "symlinked package README is not published"
 grep -q 'Curiosus.Sample package' "$page" || fail "package page has no README content"
 grep -q 'edit/main/src/Area/Curiosus.Sample/README.md' "$page" || fail "editUrl does not follow the symlink"
+# The home page is a symlinked README without sidebar_position, it still goes before the positioned guide.
+first_link="$(grep -oE 'class="menu__link[^"]*"[^>]*href="[^"]*"' build/guide.html | head -1)"
+[[ "$first_link" == *'href="/Curiosus.Sample/"' ]] || fail "home page is not the first sidebar item: $first_link"
 
 git -C "$work" init --quiet
 git -C "$work" remote add origin git@github.com:curiosus-dev/Curiosus.Sample.git

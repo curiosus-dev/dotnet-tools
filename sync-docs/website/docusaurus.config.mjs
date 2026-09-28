@@ -40,6 +40,13 @@ function editUrl({ docPath }) {
     return `${repositoryUrl}/edit/main/${path.relative(realRoot, file).split(path.sep).join('/')}`;
 }
 
+// The home page is usually a symlinked README, which cannot have sidebar_position: keep it first.
+async function sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
+    const items = await defaultSidebarItemsGenerator(args);
+    const home = items.findIndex((item) => item.type === 'doc' && item.id === 'index');
+    return home > 0 ? [items[home], ...items.filter((_, i) => i !== home)] : items;
+}
+
 export default {
     title: site.title,
     tagline: site.tagline,
@@ -58,7 +65,7 @@ export default {
     presets: [[
         'classic',
         {
-            docs: { path: docsDir, routeBasePath: '/', sidebarPath: './sidebars.mjs', editUrl },
+            docs: { path: docsDir, routeBasePath: '/', sidebarPath: './sidebars.mjs', sidebarItemsGenerator, editUrl },
             blog: false,
             theme: { customCss: './src/css/custom.css' },
         },
