@@ -29,4 +29,9 @@ git init --quiet "$override"
 (cd "$override" && SYNC_REPOSITORY=Curiosus.Migrations SYNC_DRY_RUN=1 "$root/scripts/sync.sh" >/dev/null)
 [[ -e "$override/website/docusaurus.config.mjs" ]] || fail "SYNC_REPOSITORY is ignored"
 
+push_paths="$(sed -n '/^  push:/,/^  [a-z_]*:$/p' "$root/.github/workflows/sync.yml" | grep 'paths:')"
+for path in 'sync-docs/**' 'settings/repositories.json'; do
+    [[ "$push_paths" == *"'$path'"* ]] || fail "sync workflow does not run on changes to $path"
+done
+
 echo "sync tests passed"
