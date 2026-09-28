@@ -15,7 +15,7 @@ so local builds, AI agents and CI use exactly the same scripts and settings.
 | `.config/dotnet-tools.json` | Cake and ReportGenerator versions |
 | `.github/workflows/build.yml` | Pull request build and tests |
 | `.github/workflows/release-packages.yml` | Publishing via NuGet Trusted Publishing + GitHub releases |
-| `.github/dependabot.yml` | Weekly NuGet updates (synced workflows and build tools are updated here, not by Dependabot) |
+| `.github/dependabot.yml` | Security updates for all NuGet packages, monthly version updates for test-only packages |
 | `nuget.config` | Restore from nuget.org only |
 | `.editorconfig` | Code style |
 | `.claude/curiosus.md` | Shared instructions for Claude Code, imported from the repository `CLAUDE.md` |
