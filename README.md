@@ -59,11 +59,14 @@ RunTarget(target);
 
 `CLAUDE.md` starts with `@.claude/curiosus.md`.
 
-Coverage badge for `README.md`:
+Coverage badges for `README.md`, for the repository and for a package:
 
 ```markdown
 [![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/curiosus-dev/<repository>/badges/coverage.json)](https://github.com/curiosus-dev/<repository>/actions/workflows/release-packages.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/curiosus-dev/<repository>/badges/<PackageId>.json)](https://github.com/curiosus-dev/<repository>/actions/workflows/release-packages.yml)
 ```
+
+A package whose assembly is never loaded by tests shows "no tests".
 
 Conventions the scripts rely on are described in [`.claude/curiosus.md`](sync/.claude/curiosus.md).
 
