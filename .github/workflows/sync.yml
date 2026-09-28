@@ -45,3 +45,4 @@ jobs:
           APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
           SOURCE_REPOSITORY: ${{ github.repository }}
           SOURCE_SHA: ${{ github.sha }}
+          SYNC_REPOSITORY: ${{ matrix.repository }}
