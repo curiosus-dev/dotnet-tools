@@ -1,5 +1,9 @@
 # dotnet-tools
 
+[![Lint](https://github.com/curiosus-dev/dotnet-tools/actions/workflows/lint.yml/badge.svg?branch=main)](https://github.com/curiosus-dev/dotnet-tools/actions/workflows/lint.yml)
+[![Sync](https://github.com/curiosus-dev/dotnet-tools/actions/workflows/sync.yml/badge.svg?branch=main)](https://github.com/curiosus-dev/dotnet-tools/actions/workflows/sync.yml)
+[![Settings drift](https://github.com/curiosus-dev/dotnet-tools/actions/workflows/settings-drift.yml/badge.svg?branch=main)](https://github.com/curiosus-dev/dotnet-tools/actions/workflows/settings-drift.yml)
+
 Shared build, CI, release and editor setup for the Curiosus .NET libraries:
 [Curiosus.Migrations](https://github.com/curiosus-dev/Curiosus.Migrations),
 [Curiosus.Utils](https://github.com/curiosus-dev/Curiosus.Utils),
@@ -7,6 +11,16 @@ Shared build, CI, release and editor setup for the Curiosus .NET libraries:
 
 Files in [`sync/`](sync) are copied into the root of every repository by pull requests,
 so local builds, AI agents and CI use exactly the same scripts and settings.
+
+## Status
+
+| Repository | Default branch | Pull requests | Coverage | NuGet |
+|---|---|---|---|---|
+| [Curiosus.Migrations](https://github.com/curiosus-dev/Curiosus.Migrations) | [![Release](https://github.com/curiosus-dev/Curiosus.Migrations/actions/workflows/release-packages.yml/badge.svg?branch=master)](https://github.com/curiosus-dev/Curiosus.Migrations/actions/workflows/release-packages.yml) | [![Build](https://github.com/curiosus-dev/Curiosus.Migrations/actions/workflows/build.yml/badge.svg?event=pull_request)](https://github.com/curiosus-dev/Curiosus.Migrations/actions/workflows/build.yml) | [![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/curiosus-dev/Curiosus.Migrations/badges/coverage.json)](https://github.com/curiosus-dev/Curiosus.Migrations/actions/workflows/release-packages.yml) | [![NuGet](https://img.shields.io/nuget/v/Curiosus.Migrations)](https://www.nuget.org/packages/Curiosus.Migrations) |
+| [Curiosus.Utils](https://github.com/curiosus-dev/Curiosus.Utils) | [![Release](https://github.com/curiosus-dev/Curiosus.Utils/actions/workflows/release-packages.yml/badge.svg?branch=master)](https://github.com/curiosus-dev/Curiosus.Utils/actions/workflows/release-packages.yml) | [![Build](https://github.com/curiosus-dev/Curiosus.Utils/actions/workflows/build.yml/badge.svg?event=pull_request)](https://github.com/curiosus-dev/Curiosus.Utils/actions/workflows/build.yml) | [![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/curiosus-dev/Curiosus.Utils/badges/coverage.json)](https://github.com/curiosus-dev/Curiosus.Utils/actions/workflows/release-packages.yml) | [![NuGet](https://img.shields.io/nuget/v/Curiosus.Tools?label=nuget%20Curiosus.Tools)](https://www.nuget.org/profiles/curiosus-dev) |
+| [Curiosus.TelegramBot](https://github.com/curiosus-dev/Curiosus.TelegramBot) | [![Release](https://github.com/curiosus-dev/Curiosus.TelegramBot/actions/workflows/release-packages.yml/badge.svg?branch=main)](https://github.com/curiosus-dev/Curiosus.TelegramBot/actions/workflows/release-packages.yml) | [![Build](https://github.com/curiosus-dev/Curiosus.TelegramBot/actions/workflows/build.yml/badge.svg?event=pull_request)](https://github.com/curiosus-dev/Curiosus.TelegramBot/actions/workflows/build.yml) | [![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/curiosus-dev/Curiosus.TelegramBot/badges/coverage.json)](https://github.com/curiosus-dev/Curiosus.TelegramBot/actions/workflows/release-packages.yml) | [![NuGet](https://img.shields.io/nuget/v/Curiosus.TelegramBot)](https://www.nuget.org/packages/Curiosus.TelegramBot) |
+
+*Default branch* is the last push: build, tests, publishing. *Pull requests* is the last pull request build.
 
 | File | Purpose |
 |---|---|
