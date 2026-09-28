@@ -100,7 +100,8 @@ Task("CoverageReport")
     {
         var reports = GetFiles($"{coverageDir}/**/*.cobertura.xml");
         if (reports.Count == 0)
-            throw new CakeException($"No coverage reports found in {coverageDir}. Do test projects reference Microsoft.NET.Test.Sdk?");
+            throw new CakeException(
+                $"No coverage reports found in {coverageDir}. Do test projects reference Microsoft.NET.Test.Sdk?");
 
         // Only the libraries count: test assemblies and third-party assemblies with symbols are left out.
         var assemblyFilters = GetFiles("./src/**/*.csproj").Select(x => $"+{ReadAssemblyName(x)}");
