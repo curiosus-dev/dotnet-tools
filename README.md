@@ -25,7 +25,7 @@ so local builds, AI agents and CI use exactly the same scripts and settings.
 | File | Purpose |
 |---|---|
 | `build/curiosus.cake` | Cake tasks: build, tests, coverage report, pack, nuget.org push, GitHub releases |
-| `build/Curiosus.props` | Common MSBuild settings (deterministic CI builds, Source Link, symbol packages, package README) |
+| `build/Curiosus.props` | Common MSBuild settings (deterministic CI builds, Source Link, symbol packages, package README, icon, authors, copyright) |
 | `.config/dotnet-tools.json` | Cake and ReportGenerator versions |
 | `.github/workflows/build.yml` | Pull request build, tests and coverage summary |
 | `.github/workflows/release-packages.yml` | Publishing via NuGet Trusted Publishing + GitHub releases, coverage badge |
