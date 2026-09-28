@@ -88,7 +88,7 @@ listed in [`settings/repositories.json`](settings/repositories.json):
 
 | File | What |
 |---|---|
-| `repository.json` | Merge options, wiki/projects, branch cleanup, secret scanning, push protection, Dependabot security updates |
+| `repository.json` | Merge options, issues/wiki/projects, branch cleanup, secret scanning, push protection, Dependabot security updates |
 | `actions.json` | Allowed actions (GitHub-owned + `NuGet/login`), SHA pinning required, read-only `GITHUB_TOKEN`, fork PR approval |
 | `rulesets/protect-default-branch.json` | No force pushes or deletion of the default branch, no bypass |
 | `rulesets/default-branch-pull-requests.json` | Changes via pull requests with green required checks; repository admins can bypass |
