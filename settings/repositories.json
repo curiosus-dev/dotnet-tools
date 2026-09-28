@@ -1,9 +1,9 @@
 {
   "owner": "curiosus-dev",
   "repositories": {
-    "Curiosus.Migrations": { "required_checks": [ "build" ] },
-    "Curiosus.Utils": { "required_checks": [ "build" ] },
-    "Curiosus.TelegramBot": { "required_checks": [ "build" ] },
+    "Curiosus.Migrations": { "required_checks": [ "build" ], "environments": [ "nuget" ] },
+    "Curiosus.Utils": { "required_checks": [ "build" ], "environments": [ "nuget" ] },
+    "Curiosus.TelegramBot": { "required_checks": [ "build" ], "environments": [ "nuget" ] },
     "dotnet-tools": { "required_checks": [ "lint" ] },
     ".github": { "required_checks": [] }
   }
