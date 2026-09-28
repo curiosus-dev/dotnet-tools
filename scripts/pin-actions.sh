@@ -8,8 +8,8 @@
 # Requires an authenticated gh CLI.
 set -euo pipefail
 
-cd "$(dirname "${BASH_SOURCE[0]}")/.."
 if [[ $# -eq 0 ]]; then
+    cd "$(dirname "${BASH_SOURCE[0]}")/.."
     set -- .github/workflows/*.yml sync/.github/workflows/*.yml
 fi
 
