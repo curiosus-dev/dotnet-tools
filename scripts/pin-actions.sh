@@ -4,13 +4,14 @@
 #     uses: actions/checkout@<old sha> # v7.0.0     ->  uses: actions/checkout@<new sha> # v7.0.1
 # Major upgrades stay manual: change the version comment (or tag) to the new major and rerun.
 #
-# Usage: scripts/pin-actions.sh [workflow files...]   (default: .github/workflows/*.yml sync/.github/workflows/*.yml)
+# Usage: scripts/pin-actions.sh [workflow files...]
+#     default: .github/workflows/*.yml sync/.github/workflows/*.yml sync-docs/.github/workflows/*.yml
 # Requires an authenticated gh CLI.
 set -euo pipefail
 
 if [[ $# -eq 0 ]]; then
     cd "$(dirname "${BASH_SOURCE[0]}")/.."
-    set -- .github/workflows/*.yml sync/.github/workflows/*.yml
+    set -- .github/workflows/*.yml sync/.github/workflows/*.yml sync-docs/.github/workflows/*.yml
 fi
 
 python3 - "$@" <<'EOF'
