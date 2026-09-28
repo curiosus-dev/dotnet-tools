@@ -10,11 +10,11 @@ so local builds, AI agents and CI use exactly the same scripts and settings.
 
 | File | Purpose |
 |---|---|
-| `build/curiosus.cake` | Cake tasks: build, tests, coverage, pack, nuget.org push, GitHub releases |
+| `build/curiosus.cake` | Cake tasks: build, tests, coverage report, pack, nuget.org push, GitHub releases |
 | `build/Curiosus.props` | Common MSBuild settings (deterministic CI builds, Source Link, symbol packages) |
 | `.config/dotnet-tools.json` | Cake and ReportGenerator versions |
-| `.github/workflows/build.yml` | Pull request build and tests |
-| `.github/workflows/release-packages.yml` | Publishing via NuGet Trusted Publishing + GitHub releases |
+| `.github/workflows/build.yml` | Pull request build, tests and coverage summary |
+| `.github/workflows/release-packages.yml` | Publishing via NuGet Trusted Publishing + GitHub releases, coverage badge |
 | `.github/dependabot.yml` | Security updates for all NuGet packages, monthly version updates for test-only packages |
 | `nuget.config` | Restore from nuget.org only |
 | `.editorconfig` | Code style |
@@ -42,6 +42,12 @@ RunTarget(target);
 ```
 
 `CLAUDE.md` starts with `@.claude/curiosus.md`.
+
+Coverage badge for `README.md`:
+
+```markdown
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/curiosus-dev/<repository>/badges/coverage.json)](https://github.com/curiosus-dev/<repository>/actions/workflows/release-packages.yml)
+```
 
 Conventions the scripts rely on are described in [`.claude/curiosus.md`](sync/.claude/curiosus.md).
 
