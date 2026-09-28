@@ -121,7 +121,10 @@ def process(owner, name, config, apply):
             if apply:
                 gh('POST', f'{repo}/rulesets', ruleset)
             continue
-        section(f'ruleset {ruleset["name"]}', ruleset, gh('GET', f'{repo}/rulesets/{ruleset_id}'),
+        actual = gh('GET', f'{repo}/rulesets/{ruleset_id}')
+        # bypass_actors are returned only to those who can edit the ruleset, not to the read-only drift check token.
+        expected = ruleset if 'bypass_actors' in actual else {k: v for k, v in ruleset.items() if k != 'bypass_actors'}
+        section(f'ruleset {ruleset["name"]}', expected, actual,
                 lambda r=ruleset, i=ruleset_id: gh('PUT', f'{repo}/rulesets/{i}', r))
 
     return diffs

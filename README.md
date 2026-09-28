@@ -81,6 +81,7 @@ scripts/repo-settings.py apply dotnet-tools
 
 [Settings drift](.github/workflows/settings-drift.yml) runs `check` weekly with the sync app token (read-only) and
 fails when someone changed a setting by hand: either apply `./settings` again or change `./settings`.
+Ruleset bypass actors are visible only to repository admins, so they are checked by a local `check` alone.
 
 ## Pinned actions
 
