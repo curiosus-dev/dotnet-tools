@@ -6,8 +6,8 @@ Date: 2026-09-28. Repositories: dotnet-tools, Curiosus.Migrations, Curiosus.Util
 
 Replace MkDocs + ReadTheDocs with Docusaurus sites hosted on GitHub Pages:
 
-- Curiosus.Migrations: the existing `docs/` pages move to Docusaurus.
-- Curiosus.Utils: a small site built from the root README, the package READMEs in `src/**` and the existing guides in `docs/`.
+- Curiosus.Migrations: the existing `docs/` pages move to Docusaurus, package changelogs are published.
+- Curiosus.Utils: a small site made of the root README, the package READMEs in `src/**` and the existing guides.
 - Theme, styles and the docs workflow are owned by dotnet-tools and distributed by the existing sync mechanism.
 
 Sites are served at `https://curiosus-dev.github.io/<repository>/`.
@@ -21,8 +21,8 @@ Curiosus.TelegramBot. Disabling the ReadTheDocs projects is a manual step done b
 
 `dotnet-tools/sync-docs/` is copied into a repository after `sync/`, only when the repository has `"docs": true` in
 `settings/repositories.json`. `scripts/sync.sh` reads the flag with `jq`, taking the repository name from
-`SYNC_REPOSITORY` or, when unset (also in `SYNC_DRY_RUN=1`), from `git remote get-url origin`. Like `sync/`, files are copied and never
-deleted, so turning the flag off leaves the files in place.
+`SYNC_REPOSITORY` or, when unset (also in `SYNC_DRY_RUN=1`), from `git remote get-url origin`. Like `sync/`, files are
+copied and never deleted, so turning the flag off leaves the files in place.
 
 ```
 sync-docs/
@@ -32,8 +32,7 @@ sync-docs/
     sidebars.mjs
     src/css/custom.css
     static/img/            logo and favicon from curiosus-dev/.github branding
-    scripts/collect.mjs
-    .gitignore             node_modules/, build/, .generated/, .docusaurus/
+    .gitignore             node_modules/, build/, .docusaurus/
   .github/workflows/docs.yml
 ```
 
@@ -41,61 +40,49 @@ sync-docs/
 
 ## Per-repository configuration
 
-Each documented repository has a `docs.json` at the root, not synced:
-
-| Field | Required | Meaning |
-|---|---|---|
-| `title` | yes | Site title and navbar text |
-| `tagline` | yes | Meta description and home page subtitle |
-| `index` | no | Markdown file that becomes the home page (`/`); when absent, `docs/index.md` is used |
-| `readmes` | no | Glob patterns of package READMEs to publish; empty by default |
-| `pages` | no | Extra files to publish at a fixed path: `{"changelog/x.md": {"source": "src/X/CHANGELOG.md", "label": "X"}}` |
+Each documented repository has a `docs.json` at the root, not synced, with two required fields: `title` (site title
+and navbar text) and `tagline` (meta description). `docusaurus.config.mjs` fails the build when the file or a field is
+missing.
 
 Site `url` and `baseUrl` come from `GITHUB_REPOSITORY` (`owner/name` → `https://owner.github.io/name/`), with the
-local fallback derived from `git remote get-url origin`. `editUrl` points to the `main` branch of the repository.
-`docusaurus.config.mjs` fails the build when `docs.json` is missing or has no `title`/`tagline`.
+local fallback derived from `git remote get-url origin`. `editUrl` points to the `main` branch of the repository and
+follows symlinks to the real file.
 
-## Content pipeline
+## Content
 
-`npm run build` and `npm start` first run `scripts/collect.mjs`, which recreates `website/.generated/docs/`:
+The Docusaurus docs plugin reads the repository `docs/` directly (`path: '../docs'`, `routeBasePath: '/'`).
+Content that lives elsewhere is published through **relative symlinks committed in `docs/`**:
 
-1. Copies the repository `docs/` as is (Markdown, images, `_category_.json`).
-2. When `index` is set, copies that file to `index.md` with `slug: /`.
-3. For each README matched by `readmes`, `src/<Area>/<Package>/README.md` becomes
-   `packages/<area>/<package>.md` (lowercase), with a `_category_.json` per area labelled by the directory name.
-   The page title is the README's first `#` heading.
-4. Rewrites relative links in every copied README:
-   - a link to another published file (relative, or an absolute `github.com/<owner>/<repo>/blob|tree/<branch>/` URL
-     of this repository) → the relative path of its generated page, keeping the anchor;
-   - a relative image → `https://raw.githubusercontent.com/<owner>/<repo>/main/<path>`;
-   - any other link into the repository → `https://github.com/<owner>/<repo>/blob/main/<path>`;
-   - other absolute URLs, anchors and anything inside fenced code blocks are unchanged.
-5. Copies each `pages` entry the same way as a README, with `sidebar_label` set from `label`.
+- Utils: `docs/index.md → ../README.md`; `docs/packages/<area>/<package>.md → ../../../src/<Area>/<Package>/README.md`,
+  lowercase names with dots replaced by dashes (`src/DAL/Curiosus.DAL` → `packages/dal/curiosus-dal.md`).
+- Migrations: `docs/changelog/<package>.md → ../../src/<Package>/CHANGELOG.md` for every package.
 
-The collect step fails on a duplicate home page (`index` set while `docs/index.md` exists) and on two sources mapped
-to the same page path. Sources stay MDX: files that do not compile (unclosed HTML tags, `{` in text) are fixed in the
-repository, the collect step does not transform HTML.
+Consequences:
 
-The Docusaurus docs plugin reads only `.generated/docs` with `routeBasePath: '/'`, so both libraries build the same
-way. `onBrokenLinks` and `onBrokenMarkdownLinks` are `throw`. The sidebar is autogenerated from the directory
-structure; order comes from `sidebar_position` front matter and `_category_.json`.
+- Symlinked files cannot carry front matter (it would show on GitHub and nuget.org). Their sidebar label is the first
+  `#` heading; order and group labels come from committed `_category_.json` files.
+- Links inside symlinked files must be absolute (already required for nuget.org readmes). A relative link fails the
+  build through `onBrokenLinks`/`onBrokenMarkdownLinks: 'throw'`.
+- Windows clones need `core.symlinks=true`; CI runs on Linux.
+- Sources compile as MDX: files that do not (unclosed HTML tags, string `style` attributes, bare `{`/`<` in text) are
+  fixed in the repository, keeping them valid for GitHub and nuget.org.
 
-The collect step has unit tests (`node --test`) on a fixture tree covering the link rewriting and path mapping.
+The sidebar is autogenerated from the directory structure.
 
 ## Theme
 
 Classic preset with the Curiosus brand colour `#c23926` as `--ifm-color-primary` (with generated shades), light and
-dark modes, Prism highlighting for C#, SQL, YAML, Bash and JSON. Navbar: logo, title, GitHub and NuGet links. Footer:
-links to the organization and to dotnet-tools, copyright "Curiosus contributors".
+dark modes, Prism highlighting for C#, SQL, YAML, Bash, PowerShell and JSON. Navbar: logo, title, GitHub and NuGet
+links. Footer: links to the organization, NuGet and dotnet-tools, copyright "Curiosus contributors".
 
 ## CI: docs.yml
 
 - Triggers: `pull_request` and `push` to `main`, with paths `docs/**`, `website/**`, `docs.json`, `**/README.md`,
-  `.github/workflows/docs.yml`; plus `workflow_dispatch`.
+  `**/CHANGELOG.md`, `.github/workflows/docs.yml`; plus `workflow_dispatch`.
 - `build` job: Node 24, `npm ci` and `npm run build` in `website/`; on `main` it uploads the site with
   `actions/upload-pages-artifact`.
 - `deploy` job, only on `main`: `actions/deploy-pages`, environment `github-pages`, permissions `pages: write`,
-  `id-token: write`. Concurrency group `pages`, no cancel in progress.
+  `id-token: write`.
 - Actions are pinned by SHA with `scripts/pin-actions.sh`.
 - The job is not a required check: with the paths filter it would block pull requests that do not touch docs.
 
@@ -106,20 +93,22 @@ links to the organization and to dotnet-tools, copyright "Curiosus contributors"
 - `scripts/repo-settings.py`: for `docs: true` repositories, checks and applies GitHub Pages with
   `build_type: workflow`, so settings drift reports it.
 - `.github/dependabot.yml`: npm updates for `/sync-docs/website`; the documented repositories get updates through sync.
-- `lint.yml`: builds the site against a fixture repository in `tests/docs-fixture/` and runs the collect tests.
+- `lint.yml`: builds the site against a fixture repository in `tests/docs-fixture/` that uses symlinks, and runs the
+  sync test.
 
 ## Changes in the libraries
 
 Curiosus.Migrations:
 
-- `docs.json` with `pages` for the four package changelogs (replacing the broken `docs/changelog` symlinks);
-  `sidebar_position` front matter and `_category_.json` reproducing the current `mkdocs.yml` nav.
+- `docs.json`; `sidebar_position` front matter and `_category_.json` reproducing the current `mkdocs.yml` nav.
+- `docs/changelog/*.md` symlinks fixed to `src/Curiosus.*/CHANGELOG.md`, plus the missing Curiosus.Migrations.Utils one.
 - `!!! note` → `:::note`.
 - Removes `mkdocs.yml`, `.readthedocs.yaml`, `docs/requirements.txt`, `docs/stylesheets/`, `docs/images/curiosus-logo-*`.
 
 Curiosus.Utils:
 
-- `docs.json` with `index: README.md` and `readmes: ["src/**/README.md"]`.
+- `docs.json`; `docs/index.md` becomes a symlink to `README.md` (its current content merged into README first);
+  `docs/packages/**` symlinks with `_category_.json` per area.
 - `docs/Notiifications/` → `docs/notifications/`.
 - Removes `mkdocs.yml`, `.readthedocs.yml`, `requirements.txt`.
 
@@ -129,13 +118,12 @@ CLAUDE.md and package metadata point to the Pages site.
 ## Delivery
 
 1. dotnet-tools pull request. After merge, sync opens pull requests with `website/` and `docs.yml` in both libraries.
-2. Content pull requests in Curiosus.Migrations and Curiosus.Utils (`docs.json`, front matter, clean-up). Until both
-   the sync and the content pull requests are merged, the site may fail to build; the ReadTheDocs sites keep serving
-   the old documentation meanwhile.
+2. Content pull requests in Curiosus.Migrations and Curiosus.Utils. Until both the sync and the content pull requests
+   are merged, the site may fail to build; the ReadTheDocs sites keep serving the old documentation meanwhile.
 
 ## Verification
 
-- `node --test` for the collect step.
+- `tests/sync-test.sh` and `tests/docs-build.sh` (fixture with symlinks) in dotnet-tools.
 - In each library worktree: `SYNC_DRY_RUN=1 ../dotnet-tools/scripts/sync.sh`, then `npm ci && npm run build` in
-  `website/` with no broken links, and a manual look at the home page, a feature page and a package page via
-  `npm run serve`.
+  `website/` with no broken links, and a manual look at the home page, a feature page and a package or changelog page
+  via `npm run serve`.
