@@ -1,0 +1,10 @@
+{
+  "owner": "curiosus-dev",
+  "repositories": {
+    "Curiosus.Migrations": { "required_checks": [ "build" ] },
+    "Curiosus.Utils": { "required_checks": [ "build" ] },
+    "Curiosus.TelegramBot": { "required_checks": [ "build" ] },
+    "dotnet-tools": { "required_checks": [ "lint" ] },
+    ".github": { "required_checks": [] }
+  }
+}

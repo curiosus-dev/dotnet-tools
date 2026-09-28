@@ -1,0 +1,12 @@
+# Workflows of this repository only: Dependabot does not look into sync/.github/workflows,
+# pins there are updated with scripts/pin-actions.sh.
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: [ "*" ]

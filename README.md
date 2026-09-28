@@ -15,6 +15,7 @@ so local builds, AI agents and CI use exactly the same scripts and settings.
 | `.config/dotnet-tools.json` | Cake and ReportGenerator versions |
 | `.github/workflows/build.yml` | Pull request build and tests |
 | `.github/workflows/release-packages.yml` | Publishing via NuGet Trusted Publishing + GitHub releases |
+| `.github/dependabot.yml` | Weekly NuGet updates (synced workflows and build tools are updated here, not by Dependabot) |
 | `nuget.config` | Restore from nuget.org only |
 | `.editorconfig` | Code style |
 | `.claude/curiosus.md` | Shared instructions for Claude Code, imported from the repository `CLAUDE.md` |
@@ -55,6 +56,43 @@ Files removed from `sync/` are not removed from repositories, delete them there 
 
 Preview locally from a repository root: `SYNC_DRY_RUN=1 ../dotnet-tools/scripts/sync.sh`.
 
+## Repository settings
+
+Security and repository settings are described in [`settings/`](settings) and are the same for every repository
+listed in [`settings/repositories.json`](settings/repositories.json):
+
+| File | What |
+|---|---|
+| `repository.json` | Merge options, wiki/projects, branch cleanup, secret scanning, push protection, Dependabot security updates |
+| `actions.json` | Allowed actions (GitHub-owned + `NuGet/login`), SHA pinning required, read-only `GITHUB_TOKEN`, fork PR approval |
+| `rulesets/protect-default-branch.json` | No force pushes or deletion of the default branch, no bypass |
+| `rulesets/default-branch-pull-requests.json` | Changes via pull requests with green required checks; repository admins can bypass |
+| `rulesets/protect-release-tags.json` | Tags can be created but never moved or deleted |
+
+Dependabot alerts, Dependabot security updates, private vulnerability reporting and CodeQL default setup are enabled
+by the same script. Community health files (`SECURITY.md`, `CONTRIBUTING.md`, issue and pull request templates)
+come from [curiosus-dev/.github](https://github.com/curiosus-dev/.github).
+
+```bash
+scripts/repo-settings.py check            # what differs from ./settings
+scripts/repo-settings.py apply            # make repositories match, needs repository admin rights
+scripts/repo-settings.py apply dotnet-tools
+```
+
+[Settings drift](.github/workflows/settings-drift.yml) runs `check` weekly with the sync app token (read-only) and
+fails when someone changed a setting by hand: either apply `./settings` again or change `./settings`.
+
+## Pinned actions
+
+Actions are pinned to commit SHAs (`sha_pinning_required` is on). Dependabot updates the workflows of this repository;
+synced workflows in `sync/` are updated with:
+
+```bash
+scripts/pin-actions.sh   # latest release within the same major version for every `uses:`
+```
+
+Run it when Dependabot bumps an action here, then merge: the sync pull requests deliver the new pins.
+
 ## Setup
 
 ### Sync GitHub App
@@ -64,8 +102,10 @@ Preview locally from a repository root: `SYNC_DRY_RUN=1 ../dotnet-tools/scripts/
    - Contents: read and write
    - Pull requests: read and write
    - Workflows: read and write (synced files include workflows)
+   - Administration: read (settings drift check)
+   - Code scanning alerts: read (settings drift check)
    - Metadata: read
-2. Install the app on the Curiosus repositories (not on this one).
+2. Install the app on the Curiosus repositories, this one and `.github` (the settings drift check reads all of them).
 3. In this repository add the variable `SYNC_APP_CLIENT_ID` (app Client ID)
    and the secret `SYNC_APP_PRIVATE_KEY` (generated private key).
 

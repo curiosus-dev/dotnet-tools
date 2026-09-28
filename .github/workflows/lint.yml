@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install actionlint
         run: bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
       # actionlint ships outdated metadata for create-github-app-token: v3 takes client-id, app-id is deprecated.
@@ -24,4 +24,6 @@ jobs:
           -ignore 'input "client-id" is not defined in action "actions/create-github-app-token@v3"'
           .github/workflows/*.yml sync/.github/workflows/*.yml
       - name: Lint scripts
-        run: shellcheck scripts/*.sh
+        run: |
+          shellcheck scripts/*.sh
+          python3 -m py_compile scripts/*.py
