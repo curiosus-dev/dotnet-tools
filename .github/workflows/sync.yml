@@ -1,0 +1,47 @@
+name: Sync shared files
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'sync/**', 'scripts/sync.sh', '.github/workflows/sync.yml' ]
+  workflow_dispatch:
+
+concurrency:
+  group: sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        repository: [ Curiosus.Migrations, Curiosus.Utils, Curiosus.TelegramBot ]
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: tools
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ vars.SYNC_APP_CLIENT_ID }}
+          private-key: ${{ secrets.SYNC_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ matrix.repository }}
+      - uses: actions/checkout@v7
+        with:
+          repository: ${{ github.repository_owner }}/${{ matrix.repository }}
+          token: ${{ steps.app-token.outputs.token }}
+          path: target
+      - name: Open sync pull request
+        working-directory: target
+        run: ../tools/scripts/sync.sh
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
+          SOURCE_SHA: ${{ github.sha }}
