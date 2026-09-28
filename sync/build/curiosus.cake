@@ -32,11 +32,14 @@
 //   --framework=net10.0       limits build and tests to a single target framework
 //   --coverage=true           collects Cobertura coverage into ./artifacts/coverage with Microsoft Code Coverage
 //                             (comes with Microsoft.NET.Test.Sdk, test projects need no extra packages)
+//   --minCoverage=70          CoverageReport fails below this line coverage, %; the repository default is set
+//                             in build.cake after #load: `minLineCoverage = 70;` (0 - no check)
 //   --releaseTagFormat=auto   auto: "v{version}" for single-package repositories, "{id}.v{version}" otherwise
 //   --githubReleaseDryRun     writes release notes to ./artifacts/release-notes without creating releases
 ///////////////////////////////////////////////////////////////////////////////
 
 using System.IO.Compression;
+using System.Text.Json;
 using System.Xml.Linq;
 
 var target = Argument<string>("target", "Default");
@@ -45,6 +48,9 @@ var framework = Argument<string>("framework", "");
 var collectCoverage = Argument<bool>("coverage", false) || target == "CoverageReport";
 var releaseTagFormat = Argument<string>("releaseTagFormat", "auto");
 var githubReleaseDryRun = HasArgument("githubReleaseDryRun");
+
+// Set by the repository build.cake, read when CoverageReport runs, so --minCoverage still overrides it.
+var minLineCoverage = 0d;
 
 var artifactsDir = MakeAbsolute(Directory("./artifacts"));
 var packagesDir = artifactsDir.Combine("packages");
@@ -110,6 +116,20 @@ Task("CoverageReport")
         });
         if (exitCode != 0)
             throw new CakeException($"reportgenerator failed (exit code {exitCode}).");
+
+        var summaryPath = artifactsDir.Combine("coverage-report").CombineWithFilePath("Summary.json").FullPath;
+        using var summary = JsonDocument.Parse(System.IO.File.ReadAllText(summaryPath));
+        var lineCoverage = summary.RootElement.GetProperty("summary").TryGetProperty("linecoverage", out var value)
+            && value.ValueKind == JsonValueKind.Number
+                ? value.GetDouble()
+                : 0;
+
+        var threshold = Argument<double>("minCoverage", minLineCoverage);
+        if (lineCoverage < threshold)
+            throw new CakeException(
+                FormattableString.Invariant($"Line coverage {lineCoverage}% is below the minimum of {threshold}%."));
+
+        Information(FormattableString.Invariant($"Line coverage: {lineCoverage}% (minimum {threshold}%)."));
     });
 
 ///////////////////////////////////////////////////////////////////////////////

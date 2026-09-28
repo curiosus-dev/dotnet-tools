@@ -27,6 +27,8 @@ so local builds, AI agents and CI use exactly the same scripts and settings.
 ```csharp
 #load "build/curiosus.cake"
 
+minLineCoverage = 70; // CoverageReport fails below it, %
+
 // repository-specific tasks
 
 RunTarget(target);
