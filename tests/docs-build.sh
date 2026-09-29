@@ -25,6 +25,31 @@ grep -q 'edit/main/src/Area/Curiosus.Sample/README.md' "$page" || fail "editUrl 
 first_link="$(grep -oE 'class="menu__link[^"]*"[^>]*href="[^"]*"' build/guide.html | head -1)"
 [[ "$first_link" == *'href="/Curiosus.Sample/"' ]] || fail "home page is not the first sidebar item: $first_link"
 
+# Search: local index by default.
+compgen -G 'build/search-index*.json' >/dev/null || fail "no local search index"
+grep -q 'DocSearch' build/index.html && fail "Algolia DocSearch is on without algolia in docs.json"
+
+# Footer: cross links to the other Curiosus libraries, never to the current one or to dotnet-tools.
+footer="$(grep -oE '<footer.*</footer>' build/index.html)"
+[[ "$footer" == *'Libraries'* ]] || fail "footer has no Libraries column"
+[[ "$footer" == *'https://curiosus-dev.github.io/Curiosus.Migrations/'* ]] || fail "footer has no Curiosus.Migrations link"
+[[ "$footer" == *'https://github.com/curiosus-dev/Curiosus.TelegramBot'* ]] || fail "footer has no Curiosus.TelegramBot link"
+[[ "$footer" != *'dotnet-tools'* ]] || fail "footer links to dotnet-tools"
+GITHUB_REPOSITORY=curiosus-dev/Curiosus.Utils npx docusaurus build --out-dir build-utils >/dev/null
+utils_footer="$(grep -oE '<footer.*</footer>' build-utils/index.html)"
+[[ "$utils_footer" != *'https://curiosus-dev.github.io/Curiosus.Utils/'* ]] || fail "footer links to the current library"
+
+# Search: Algolia DocSearch when docs.json has the keys.
+cp ../docs.json ../docs.json.local
+cat > ../docs.json <<'JSON'
+{ "title": "Curiosus.Sample", "tagline": "Fixture",
+  "algolia": { "appId": "APPID", "apiKey": "search-only-key", "indexName": "curiosus-sample" } }
+JSON
+GITHUB_REPOSITORY=curiosus-dev/Curiosus.Sample npx docusaurus build --out-dir build-algolia >/dev/null
+grep -q 'DocSearch' build-algolia/index.html || fail "Algolia DocSearch is off with algolia in docs.json"
+compgen -G 'build-algolia/search-index*.json' >/dev/null && fail "local search index is built with Algolia on"
+mv ../docs.json.local ../docs.json
+
 git -C "$work" init --quiet
 git -C "$work" remote add origin git@github.com:curiosus-dev/Curiosus.Sample.git
 GITHUB_REPOSITORY='' npx docusaurus build --out-dir build-local >/dev/null

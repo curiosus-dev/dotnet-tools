@@ -88,6 +88,24 @@ The repository keeps only the content:
 - Sources are compiled as MDX: close HTML tags, no string `style` attributes, bare `{`/`<` in code spans.
   Broken links fail the build.
 
+Search is a local index built with the site
+([docusaurus-search-local](https://github.com/easyops-cn/docusaurus-search-local)). To switch a site to
+[Algolia DocSearch](https://docsearch.algolia.com), apply there with the site URL and, once approved, add the
+search-only keys to `docs.json` (they are public):
+
+```json
+{ "title": "...", "tagline": "...", "algolia": { "appId": "...", "apiKey": "...", "indexName": "..." } }
+```
+
+The footer cross-links the Curiosus libraries listed in `libraries` of `sync-docs/website/docusaurus.config.mjs`:
+the documentation site when there is one, the repository otherwise.
+
+A README links to the site with the status badge of the docs workflow:
+
+```markdown
+[![Docs](https://github.com/curiosus-dev/<repository>/actions/workflows/docs.yml/badge.svg?branch=main)](https://curiosus-dev.github.io/<repository>/)
+```
+
 Preview from a repository root: `cd website && npm ci && npm start`.
 `tests/docs-build.sh` builds the site against [`tests/docs-fixture`](tests/docs-fixture), `tests/sync-test.sh` checks
 which repositories get `sync-docs/`; both run in the lint workflow. Dependabot updates the site dependencies in
@@ -176,4 +194,5 @@ Add it to the matrix in [`.github/workflows/sync.yml`](.github/workflows/sync.ym
 add it to `settings/repositories.json` (with `"environments": [ "nuget" ]` for a library; with a documentation site
 also `"docs": true` and the `github-pages` environment), run
 `scripts/repo-settings.py apply <name>`, run the sync workflow manually and set up NuGet Trusted Publishing as above.
+Add a library to `libraries` in `sync-docs/website/docusaurus.config.mjs` for the documentation footer.
 The default branch must be `main`.
