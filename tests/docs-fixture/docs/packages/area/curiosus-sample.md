@@ -1,0 +1,1 @@
+../../../src/Area/Curiosus.Sample/README.md

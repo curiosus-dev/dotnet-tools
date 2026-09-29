@@ -3,7 +3,7 @@ name: Sync shared files
 on:
   push:
     branches: [ main ]
-    paths: [ 'sync/**', 'scripts/sync.sh', '.github/workflows/sync.yml' ]
+    paths: [ 'sync/**', 'sync-docs/**', 'settings/repositories.json', 'scripts/sync.sh', '.github/workflows/sync.yml' ]
   workflow_dispatch:
 
 concurrency:
@@ -45,3 +45,4 @@ jobs:
           APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
           SOURCE_REPOSITORY: ${{ github.repository }}
           SOURCE_SHA: ${{ github.sha }}
+          SYNC_REPOSITORY: ${{ matrix.repository }}

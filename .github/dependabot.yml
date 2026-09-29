@@ -1,5 +1,6 @@
-# Workflows of this repository only: Dependabot does not look into sync/.github/workflows,
-# pins there are updated with scripts/pin-actions.sh.
+# Workflows of this repository only: Dependabot does not look into sync/.github/workflows and
+# sync-docs/.github/workflows, pins there are updated with scripts/pin-actions.sh.
+# The docs site dependencies are updated here and reach the documented repositories through sync.
 version: 2
 
 updates:
@@ -10,3 +11,11 @@ updates:
     groups:
       actions:
         patterns: [ "*" ]
+
+  - package-ecosystem: npm
+    directory: /sync-docs/website
+    schedule:
+      interval: weekly
+    groups:
+      docusaurus:
+        patterns: [ "@docusaurus/*", "@mdx-js/*", "react", "react-dom", "prism-react-renderer", "clsx" ]

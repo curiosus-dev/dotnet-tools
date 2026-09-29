@@ -70,6 +70,29 @@ A package whose assembly is never loaded by tests shows "no tests".
 
 Conventions the scripts rely on are described in [`.claude/curiosus.md`](sync/.claude/curiosus.md).
 
+## Documentation sites
+
+Repositories with `"docs": true` in [`settings/repositories.json`](settings/repositories.json) also get
+[`sync-docs/`](sync-docs): a [Docusaurus](https://docusaurus.io) `website/` (theme, styles, logo) and
+`.github/workflows/docs.yml`, which builds the site on pull requests and deploys it to GitHub Pages from `main`
+at `https://curiosus-dev.github.io/<repository>/`.
+
+The repository keeps only the content:
+
+- `docs.json` in the root: `{ "title": "...", "tagline": "..." }`.
+- `docs/` — pages; the sidebar follows the directory structure, `sidebar_position` front matter and
+  `_category_.json` files.
+- READMEs and CHANGELOGs are published by relative symlinks in `docs/`, e.g.
+  `docs/packages/dal/curiosus-dal.md -> ../../../src/DAL/Curiosus.DAL/README.md`. Symlinked files get no front matter
+  (it would show on GitHub and nuget.org), their links must be absolute; Windows clones need `core.symlinks=true`.
+- Sources are compiled as MDX: close HTML tags, no string `style` attributes, bare `{`/`<` in code spans.
+  Broken links fail the build.
+
+Preview from a repository root: `cd website && npm ci && npm start`.
+`tests/docs-build.sh` builds the site against [`tests/docs-fixture`](tests/docs-fixture), `tests/sync-test.sh` checks
+which repositories get `sync-docs/`; both run in the lint workflow. Dependabot updates the site dependencies in
+`sync-docs/website`.
+
 ## Changing shared files
 
 1. Change files in `sync/` and merge to `main`.
@@ -93,7 +116,9 @@ listed in [`settings/repositories.json`](settings/repositories.json):
 | `rulesets/protect-default-branch.json` | No force pushes or deletion of the default branch, no bypass |
 | `rulesets/default-branch-pull-requests.json` | Changes via pull requests with green required checks; repository admins can bypass |
 | `rulesets/protect-release-tags.json` | Tags can be created but never moved or deleted |
-| `environments.json` | `nuget` environment for publishing, deploys from `main` only; used by the repositories listing it in `repositories.json` |
+| `environments.json` | `nuget` environment for publishing and `github-pages` for documentation sites, both deploy from `main` only; used by the repositories listing them in `repositories.json` |
+
+GitHub Pages (deployed by workflow) is enabled for repositories with `"docs": true`.
 
 Dependabot alerts, Dependabot security updates, private vulnerability reporting and CodeQL default setup are enabled
 by the same script. Community health files (`SECURITY.md`, `CONTRIBUTING.md`, issue and pull request templates)
@@ -148,6 +173,7 @@ Run it when Dependabot bumps an action here, then merge: the sync pull requests 
 ## Adding a repository
 
 Add it to the matrix in [`.github/workflows/sync.yml`](.github/workflows/sync.yml), install the sync app on it,
-add it to `settings/repositories.json` (with `"environments": [ "nuget" ]` for a library), run
+add it to `settings/repositories.json` (with `"environments": [ "nuget" ]` for a library; with a documentation site
+also `"docs": true` and the `github-pages` environment), run
 `scripts/repo-settings.py apply <name>`, run the sync workflow manually and set up NuGet Trusted Publishing as above.
 The default branch must be `main`.

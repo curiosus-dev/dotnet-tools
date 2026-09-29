@@ -22,8 +22,17 @@ jobs:
           ./actionlint -color
           -ignore 'missing input "app-id" which is required by action "actions/create-github-app-token@v3"'
           -ignore 'input "client-id" is not defined in action "actions/create-github-app-token@v3"'
-          .github/workflows/*.yml sync/.github/workflows/*.yml
+          .github/workflows/*.yml sync/.github/workflows/*.yml sync-docs/.github/workflows/*.yml
       - name: Lint scripts
         run: |
-          shellcheck scripts/*.sh
+          shellcheck scripts/*.sh tests/*.sh
           python3 -m py_compile scripts/*.py
+      - name: Test sync
+        run: bash tests/sync-test.sh
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: sync-docs/website/package-lock.json
+      - name: Build the docs fixture
+        run: bash tests/docs-build.sh

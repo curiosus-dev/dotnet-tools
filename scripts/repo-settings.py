@@ -113,6 +113,17 @@ def process(owner, name, config, apply):
             lambda: gh('PUT', f'{repo}/actions/permissions/fork-pr-contributor-approval',
                        actions['fork_pr_contributor_approval']))
 
+    # Before environments: enabling Pages creates the github-pages environment.
+    if config.get('docs'):
+        pages = {'build_type': 'workflow'}
+        actual_pages = gh('GET', f'{repo}/pages', allow_missing=True)
+        if actual_pages is None:
+            diffs.append('pages: disabled')
+            if apply:
+                gh('POST', f'{repo}/pages', pages)
+        else:
+            section('pages', pages, actual_pages, lambda: gh('PUT', f'{repo}/pages', pages))
+
     environments = load('environments.json')
     for env_name in config.get('environments', []):
         env = environments[env_name]
