@@ -1,7 +1,7 @@
 {
   "nuget": {
     "deployment_branch_policy": { "protected_branches": false, "custom_branch_policies": true },
-    "branch_policies": [ { "name": "main", "type": "branch" } ]
+    "branch_policies": [ { "name": "main", "type": "branch" }, { "name": "release/*", "type": "branch" } ]
   },
   "github-pages": {
     "deployment_branch_policy": { "protected_branches": false, "custom_branch_policies": true },
