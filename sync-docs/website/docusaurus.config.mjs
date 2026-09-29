@@ -17,12 +17,13 @@ function loadSite() {
     for (const key of ['title', 'tagline']) {
         if (typeof site[key] !== 'string' || !site[key]) throw new Error(`docs.json: "${key}" is required`);
     }
-    for (const key of site.algolia ? ['appId', 'apiKey', 'indexName'] : []) {
-        if (typeof site.algolia[key] !== 'string' || !site.algolia[key]) {
-            throw new Error(`docs.json: "algolia.${key}" is required when "algolia" is set`);
+    const { siteVerification, ...docSearch } = site.algolia ?? {};
+    for (const key of Object.keys(docSearch).length ? ['appId', 'apiKey', 'indexName'] : []) {
+        if (typeof docSearch[key] !== 'string' || !docSearch[key]) {
+            throw new Error(`docs.json: "algolia.${key}" is required for Algolia DocSearch`);
         }
     }
-    return site;
+    return { ...site, siteVerification, docSearch: Object.keys(docSearch).length ? docSearch : undefined };
 }
 
 function resolveRepository() {
@@ -66,6 +67,7 @@ const libraryLinks = libraries
     }));
 
 // Algolia DocSearch when docs.json has its keys (https://docsearch.algolia.com), a local search index otherwise.
+// algolia.siteVerification alone only adds the meta tag Algolia checks to verify the domain.
 const localSearch = [
     '@easyops-cn/docusaurus-search-local',
     { hashed: true, indexBlog: false, docsDir: docsDir, docsRouteBasePath: '/', highlightSearchTermsOnTargetPage: true },
@@ -94,9 +96,12 @@ export default {
             theme: { customCss: './src/css/custom.css' },
         },
     ]],
-    themes: site.algolia ? [] : [localSearch],
+    headTags: site.siteVerification
+        ? [{ tagName: 'meta', attributes: { name: 'algolia-site-verification', content: site.siteVerification } }]
+        : [],
+    themes: site.docSearch ? [] : [localSearch],
     themeConfig: {
-        ...(site.algolia && { algolia: { ...site.algolia, contextualSearch: true } }),
+        ...(site.docSearch && { algolia: { ...site.docSearch, contextualSearch: true } }),
         colorMode: { respectPrefersColorScheme: true },
         navbar: {
             title: site.title,

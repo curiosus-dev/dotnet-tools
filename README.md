@@ -90,11 +90,15 @@ The repository keeps only the content:
 
 Search is a local index built with the site
 ([docusaurus-search-local](https://github.com/easyops-cn/docusaurus-search-local)). To switch a site to
-[Algolia DocSearch](https://docsearch.algolia.com), apply there with the site URL and, once approved, add the
-search-only keys to `docs.json` (they are public):
+[Algolia DocSearch](https://docsearch.algolia.com), apply there with the site URL. Algolia verifies the domain by
+a meta tag: put its value to `docs.json` as `algolia.siteVerification` (the site keeps the local search), deploy, and
+once approved add the search-only keys (they are public):
 
 ```json
-{ "title": "...", "tagline": "...", "algolia": { "appId": "...", "apiKey": "...", "indexName": "..." } }
+{
+  "title": "...", "tagline": "...",
+  "algolia": { "siteVerification": "...", "appId": "...", "apiKey": "...", "indexName": "..." }
+}
 ```
 
 The footer cross-links the Curiosus libraries listed in `libraries` of `sync-docs/website/docusaurus.config.mjs`:

@@ -39,8 +39,17 @@ GITHUB_REPOSITORY=curiosus-dev/Curiosus.Utils npx docusaurus build --out-dir bui
 utils_footer="$(grep -oE '<footer.*</footer>' build-utils/index.html)"
 [[ "$utils_footer" != *'https://curiosus-dev.github.io/Curiosus.Utils/'* ]] || fail "footer links to the current library"
 
-# Search: Algolia DocSearch when docs.json has the keys.
+# Algolia site verification alone adds the meta tag and keeps the local search.
 cp ../docs.json ../docs.json.local
+cat > ../docs.json <<'JSON'
+{ "title": "Curiosus.Sample", "tagline": "Fixture", "algolia": { "siteVerification": "0123456789ABCDEF" } }
+JSON
+GITHUB_REPOSITORY=curiosus-dev/Curiosus.Sample npx docusaurus build --out-dir build-verify >/dev/null
+grep -qE '<meta[^>]*name="algolia-site-verification"[^>]*content="0123456789ABCDEF"' build-verify/index.html \
+    || fail "no algolia-site-verification meta tag"
+compgen -G 'build-verify/search-index*.json' >/dev/null || fail "site verification alone turned the local search off"
+
+# Search: Algolia DocSearch when docs.json has the keys.
 cat > ../docs.json <<'JSON'
 { "title": "Curiosus.Sample", "tagline": "Fixture",
   "algolia": { "appId": "APPID", "apiKey": "search-only-key", "indexName": "curiosus-sample" } }
