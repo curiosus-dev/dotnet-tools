@@ -135,10 +135,11 @@ listed in [`settings/repositories.json`](settings/repositories.json):
 |---|---|
 | `repository.json` | Merge options, issues/wiki/projects, branch cleanup, secret scanning, push protection, Dependabot security updates |
 | `actions.json` | Allowed actions (GitHub-owned + `NuGet/login`), SHA pinning required, read-only `GITHUB_TOKEN`, fork PR approval |
-| `rulesets/protect-default-branch.json` | No force pushes or deletion of the default branch, no bypass |
-| `rulesets/default-branch-pull-requests.json` | Changes via pull requests with green required checks; repository admins can bypass |
+| `rulesets/protect-default-branch.json` | No force pushes or deletion of the default branch and `release/*`, no bypass |
+| `rulesets/default-branch-pull-requests.json` | Changes of the default branch and `release/*` via pull requests with green required checks; repository admins can bypass |
+| `rulesets/restrict-release-branches.json` | Only repository admins create `release/*` maintenance branches: they publish packages |
 | `rulesets/protect-release-tags.json` | Tags can be created but never moved or deleted |
-| `environments.json` | `nuget` environment for publishing and `github-pages` for documentation sites, both deploy from `main` only; used by the repositories listing them in `repositories.json` |
+| `environments.json` | `nuget` environment for publishing (deploys from `main` and `release/*`) and `github-pages` for documentation sites (from `main`); used by the repositories listing them in `repositories.json` |
 
 GitHub Pages (deployed by workflow) is enabled for repositories with `"docs": true`.
 
@@ -188,7 +189,7 @@ Run it when Dependabot bumps an action here, then merge: the sync pull requests 
 1. On nuget.org: profile → Trusted Publishing → add a policy owned by the packages owner:
    repository owner `curiosus-dev`, repository `<name>`, workflow file `release-packages.yml`, environment `nuget`.
    The environment matters: a workflow file can be changed in any branch, the `nuget` environment deploys from `main`
-   only, so tokens from other branches don't match the policy.
+   and admin-created `release/*` branches only, so tokens from other branches don't match the policy.
 2. In the repository add the secret `NUGET_USER` — nuget.org profile name, not an email.
 3. After the first successful release remove old API key secrets and revoke the keys on nuget.org.
 
