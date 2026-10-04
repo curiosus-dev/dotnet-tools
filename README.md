@@ -136,7 +136,7 @@ listed in [`settings/repositories.json`](settings/repositories.json):
 | `repository.json` | Merge options, issues/wiki/projects, branch cleanup, secret scanning, push protection, Dependabot security updates |
 | `actions.json` | Allowed actions (GitHub-owned + `NuGet/login`), SHA pinning required, read-only `GITHUB_TOKEN`, fork PR approval |
 | `rulesets/protect-default-branch.json` | No force pushes or deletion of the default branch and `release/*`, no bypass |
-| `rulesets/default-branch-pull-requests.json` | Changes of the default branch and `release/*` via pull requests with green required checks; repository admins can bypass |
+| `rulesets/default-branch-pull-requests.json` | Changes of the default branch and `release/*` via pull requests with green required checks and an approval of the latest push, so a bot cannot merge its own pull requests; repository admins can bypass |
 | `rulesets/restrict-release-branches.json` | Only repository admins create `release/*` maintenance branches: they publish packages |
 | `rulesets/protect-release-tags.json` | Tags can be created but never moved or deleted |
 | `environments.json` | `nuget` environment for publishing (deploys from `main` and `release/*`) and `github-pages` for documentation sites (from `main`); used by the repositories listing them in `repositories.json` |
